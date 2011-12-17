@@ -1,0 +1,13 @@
+Package: jp.r-plus.switchercleaner
+Name: SwitcherCleaner
+Depends: mobilesubstrate, firmware (>= 5.0)
+Version: 0.1
+Architecture: iphoneos-arm
+Conflicts: removerecents
+Description: show quit button and running icons
+Maintainer: r_plus
+Author: r_plus <anasthasia.r+cleaner@gmail.com>
+Section: Tweaks
+dev: rplus
+Tag: purpose::extension
+Priority: optional
