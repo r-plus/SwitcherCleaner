@@ -33,6 +33,12 @@
 - (NSArray *)_bundleIdentifiersForViewDisplay;// iOS 6+
 - (void)iconCloseBoxTapped:(SBIconView *)iconView;
 @end
+@interface UISwipeGestureRecognizer (Private)
+@property float minimumPrimaryMovement;// 50.0f
+@property float maximumPrimaryMovement;// too large
+@property float minimumSecondaryMovement;// 0.0f
+@property float maximumSecondaryMovement;// 50.0f
+@end
 
 %hook SBAppSwitcherController
 // iOS 5.x
@@ -61,14 +67,17 @@
   return runningApps;
 }
 
-static inline void SetCloseBoxAndSwipeUpGesture(id self, SBIconView *iconView)
+static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
 {
   if (iconView) {
     UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeUpToClose:)];
     swipe.direction = UISwipeGestureRecognizerDirectionUp;
     [iconView setShowsCloseBox:YES animated:YES];
     [iconView addGestureRecognizer:swipe];
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressToCloseAllApps:)];
+    [iconView addGestureRecognizer:longPress];
     [swipe release];
+    [longPress release];
   }
 }
 
@@ -78,14 +87,14 @@ static inline void SetCloseBoxAndSwipeUpGesture(id self, SBIconView *iconView)
   if ([self respondsToSelector:@selector(_applicationIconsExceptTopApp)]) {
     // iOS 5.x
     for (id iconView in [self _applicationIconsExceptTopApp]) {
-      SetCloseBoxAndSwipeUpGesture(self, iconView);
+      SetCloseBoxAndGesture(self, iconView);
     }
   } else if ([self respondsToSelector:@selector(_bundleIdentifiersForViewDisplay)]) {
     // iOS 6.x
     SBAppSwitcherBarView *barView = MSHookIvar<SBAppSwitcherBarView *>(self, "_bottomBar");
     for (NSString *identifier in [self _bundleIdentifiersForViewDisplay]) {
       SBIconView *iconView = [barView visibleIconViewForDisplayIdentifier:identifier];
-      SetCloseBoxAndSwipeUpGesture(self, iconView);
+      SetCloseBoxAndGesture(self, iconView);
     }
   }
 }
@@ -94,6 +103,24 @@ static inline void SetCloseBoxAndSwipeUpGesture(id self, SBIconView *iconView)
 - (void)swipeUpToClose:(UISwipeGestureRecognizer *)gesture
 {
   [self iconCloseBoxTapped:(SBIconView *)gesture.view];
+}
+
+%new(v@:@)
+- (void)longPressToCloseAllApps:(UILongPressGestureRecognizer *)gesture
+{
+  if ([self respondsToSelector:@selector(_applicationIconsExceptTopApp)]) {
+    // iOS 5.x
+    for (SBIconView *iconView in [self _applicationIconsExceptTopApp]) {
+      [self iconCloseBoxTapped:iconView];
+    }
+  } else if ([self respondsToSelector:@selector(_bundleIdentifiersForViewDisplay)]) {
+    // iOS 6.x
+    SBAppSwitcherBarView *barView = MSHookIvar<SBAppSwitcherBarView *>(self, "_bottomBar");
+    for (NSString *identifier in [self _bundleIdentifiersForViewDisplay]) {
+      SBIconView *iconView = [barView visibleIconViewForDisplayIdentifier:identifier];
+      [self iconCloseBoxTapped:iconView];
+    }
+  }
 }
 %end
 
