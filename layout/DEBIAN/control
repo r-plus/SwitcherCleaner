@@ -11,3 +11,4 @@ Section: Tweaks
 dev: rplus
 Tag: purpose::extension
 Priority: optional
+Icon: file:///Library/PreferenceLoader/Preferences/SwitcherCleaner@2x.png
