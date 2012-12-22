@@ -164,15 +164,15 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
 static void LoadSettings()
 {	
   NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:PREF_PATH];
-  id existEnabled = [dict objectForKey:@"Enabled"];
+  id existEnabled = dict[@"Enabled"];
   cleanerIsEnabled = existEnabled ? [existEnabled boolValue] : YES;
-  id existRR = [dict objectForKey:@"RemoveRecents"];
+  id existRR = dict[@"RemoveRecents"];
   removeRecentsIsEnabled = existRR ? [existRR boolValue] : YES;
-  id existQB = [dict objectForKey:@"QuitButton"];
+  id existQB = dict[@"QuitButton"];
   quitButtonIsEnabled = existQB ? [existQB boolValue] : YES;
-  id existSU = [dict objectForKey:@"SwipeUpToClose"];
+  id existSU = dict[@"SwipeUpToClose"];
   swipeUpToCloseIsEnabled = existSU ? [existSU boolValue] : YES;
-  id existLP = [dict objectForKey:@"LongPressToCloseAll"];
+  id existLP = dict[@"LongPressToCloseAll"];
   longPressToCloseAllAppsIsEnabled = existLP ? [existLP boolValue] : YES;
 }
 
@@ -183,8 +183,8 @@ static void PostNotification(CFNotificationCenterRef center, void *observer, CFS
 
 %ctor
 {
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PostNotification, CFSTR("jp.r-plus.SwitcherCleaner.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
-  LoadSettings();
-  [pool drain];
+  @autoreleasepool {
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PostNotification, CFSTR("jp.r-plus.SwitcherCleaner.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
+    LoadSettings();
+  }
 }
