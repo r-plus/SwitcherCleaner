@@ -1,5 +1,5 @@
 ARCHS = armv7
-TARGET = iphone:latest:5.0
+TARGET = iphone:clang::5.0
 include theos/makefiles/common.mk
 
 TWEAK_NAME = SwitcherCleaner
