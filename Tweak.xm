@@ -164,15 +164,15 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
 static void LoadSettings()
 {	
   NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:PREF_PATH];
-  id existEnabled = dict[@"Enabled"];
+  id existEnabled = [dict objectForKey:@"Enabled"];
   cleanerIsEnabled = existEnabled ? [existEnabled boolValue] : YES;
-  id existRR = dict[@"RemoveRecents"];
+  id existRR = [dict objectForKey:@"RemoveRecents"];
   removeRecentsIsEnabled = existRR ? [existRR boolValue] : YES;
-  id existQB = dict[@"QuitButton"];
+  id existQB = [dict objectForKey:@"QuitButton"];
   quitButtonIsEnabled = existQB ? [existQB boolValue] : YES;
-  id existSU = dict[@"SwipeUpToClose"];
+  id existSU = [dict objectForKey:@"SwipeUpToClose"];
   swipeUpToCloseIsEnabled = existSU ? [existSU boolValue] : YES;
-  id existLP = dict[@"LongPressToCloseAll"];
+  id existLP = [dict objectForKey:@"LongPressToCloseAll"];
   longPressToCloseAllAppsIsEnabled = existLP ? [existLP boolValue] : YES;
 }
 
