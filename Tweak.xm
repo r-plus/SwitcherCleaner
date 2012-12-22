@@ -23,6 +23,7 @@ static BOOL longPressToCloseAllAppsIsEnabled;
 @end
 @interface SBIcon : NSObject
 - (SBApplication *)application;
+-(id)applicationBundleID;
 @end
 @interface SBIconView : UIView
 @property(readonly, retain) SBIcon* icon;
@@ -136,14 +137,19 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
     if ([self respondsToSelector:@selector(_applicationIconsExceptTopApp)]) {
       // iOS 5.x
       for (SBIconView *iconView in [self _applicationIconsExceptTopApp]) {
-        [self iconCloseBoxTapped:iconView];
+        NSString *identifier = [iconView.icon applicationBundleID];
+        if (![identifier isEqualToString:@"com.apple.mobileipod"] && ![identifier isEqualToString:@"com.apple.Music"])
+          [self iconCloseBoxTapped:iconView];
       }
     } else if ([self respondsToSelector:@selector(_bundleIdentifiersForViewDisplay)]) {
       // iOS 6.x
       SBAppSwitcherBarView *barView = MSHookIvar<SBAppSwitcherBarView *>(self, "_bottomBar");
       for (NSString *identifier in [self _bundleIdentifiersForViewDisplay]) {
         SBIconView *iconView = [barView visibleIconViewForDisplayIdentifier:identifier];
-        [self iconCloseBoxTapped:iconView];
+        // iOS 5+ iPhone: com.apple.mobileipod
+        // iOS 5 iPad: com.apple.Music
+        if (![identifier isEqualToString:@"com.apple.mobileipod"] && ![identifier isEqualToString:@"com.apple.Music"])
+          [self iconCloseBoxTapped:iconView];
       }
     }
   }
