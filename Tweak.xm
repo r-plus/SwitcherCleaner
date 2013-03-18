@@ -132,6 +132,9 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
 %new(v@:@)
 - (void)longPressToCloseAllApps:(UILongPressGestureRecognizer *)gesture
 {
+    if (gesture.state != UIGestureRecognizerStateBegan)
+        return;
+
     if (cleanerIsEnabled && longPressToCloseAllAppsIsEnabled) {
         if ([self respondsToSelector:@selector(_applicationIconsExceptTopApp)]) {
             // iOS 5.x
