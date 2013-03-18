@@ -8,6 +8,8 @@ static BOOL quitButtonIsEnabled;
 static BOOL swipeUpToCloseIsEnabled;
 static BOOL longPressToCloseAllAppsIsEnabled;
 
+static int (*BKSTerminateApplicationForReasonAndReportWithDescription)(NSString *displayIdentifier, int reason, int something, int something2);
+
 @interface SBProcess : NSObject // SBProcess class is dead in iOS 6+
 - (BOOL)isRunning;
 @end
@@ -31,6 +33,9 @@ static BOOL longPressToCloseAllAppsIsEnabled;
 @end
 @interface SBAppSwitcherBarView : NSObject
 - (SBIconView *)visibleIconViewForDisplayIdentifier:(NSString *)identifier;
+- (SBIcon *)_iconForDisplayIdentifier:(id)displayIdentifier;
+- (SBIconView *)_iconViewForIcon:(id)icon creatingIfNecessary:(BOOL)necessary;
+- (void)removeIconWithDisplayIdentifier:(id)displayIdentifier;
 @end
 @interface SBIconViewMap : NSObject
 + (id)switcherMap;
@@ -145,9 +150,17 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
             // iOS 6.x
             SBAppSwitcherBarView *barView = MSHookIvar<SBAppSwitcherBarView *>(self, "_bottomBar");
             for (NSString *identifier in [self _bundleIdentifiersForViewDisplay]) {
-                SBIconView *iconView = [barView visibleIconViewForDisplayIdentifier:identifier];
-                [self iconCloseBoxTapped:iconView];
+                SBIcon *icon = [barView _iconForDisplayIdentifier:identifier];
+                SBIconView *iconView = [barView _iconViewForIcon:icon creatingIfNecessary:YES];
+                if (iconView) {
+                    [self iconCloseBoxTapped:iconView];
+                } else if (BKSTerminateApplicationForReasonAndReportWithDescription != NULL) {
+                    // for future compatibility.
+                    BKSTerminateApplicationForReasonAndReportWithDescription(identifier, 1, 0, 0);
+                    [barView removeIconWithDisplayIdentifier:identifier];
+                }
             }
+            // FIXME: When long press app that existing 2+ page location to close all app, Zephyr will not work on SpringBoard.
         }
     }
 }
@@ -187,6 +200,10 @@ static void PostNotification(CFNotificationCenterRef center, void *observer, CFS
 %ctor
 {
     @autoreleasepool {
+        void *bk = dlopen("/System/Library/PrivateFrameworks/BackBoardServices.framework/BackBoardServices", RTLD_LAZY);
+        if (bk) {
+            BKSTerminateApplicationForReasonAndReportWithDescription = (int (*)(NSString*, int, int, int))dlsym(bk, "BKSTerminateApplicationForReasonAndReportWithDescription");
+        }
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, PostNotification, CFSTR("jp.r-plus.SwitcherCleaner.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
         LoadSettings();
     }
