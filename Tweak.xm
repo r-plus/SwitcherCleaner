@@ -31,7 +31,8 @@ static int (*BKSTerminateApplicationForReasonAndReportWithDescription)(NSString 
 - (int)location;
 - (void)setShowsCloseBox:(BOOL)show animated:(BOOL)animate;
 @end
-@interface SBAppSwitcherBarView : NSObject
+@interface SBAppSwitcherBarView : UIView
+- (CGPoint)_firstPageOffset:(CGSize)offset;
 - (SBIconView *)visibleIconViewForDisplayIdentifier:(NSString *)identifier;
 - (SBIcon *)_iconForDisplayIdentifier:(id)displayIdentifier;
 - (SBIconView *)_iconViewForIcon:(id)icon creatingIfNecessary:(BOOL)necessary;
@@ -160,7 +161,13 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
                     [barView removeIconWithDisplayIdentifier:identifier];
                 }
             }
-            // FIXME: When long press app that existing 2+ page location to close all app, Zephyr will not work on SpringBoard.
+            // Workaround for Zephyr: When long press app that existing 2+ page location to close all app, Zephyr will not work on SpringBoard.
+            if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Zephyr.dylib"]) {
+                CGPoint firstPagePoint = [barView _firstPageOffset:[UIScreen mainScreen].applicationFrame.size];
+                firstPagePoint.x += 1;
+                UIScrollView *sv = MSHookIvar<UIScrollView *>(barView, "_scrollView");
+                [sv setContentOffset:firstPagePoint animated:NO];
+            }
         }
     }
 }
