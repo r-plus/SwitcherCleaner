@@ -7,7 +7,7 @@ static BOOL removeRecentsIsEnabled;
 static BOOL quitButtonIsEnabled;
 static BOOL swipeUpToCloseIsEnabled;
 static BOOL longPressToCloseAllAppsIsEnabled;
-static BOOL excludeNowPlayingAppPref;
+static BOOL excludeNowPlayingApp;
 
 static int (*BKSTerminateApplicationForReasonAndReportWithDescription)(NSString *displayIdentifier, int reason, int something, int something2);
 
@@ -17,6 +17,7 @@ static int (*BKSTerminateApplicationForReasonAndReportWithDescription)(NSString 
 @interface SBApplication : NSObject
 @property(retain, nonatomic) SBProcess* process;// until iOS 5
 - (BOOL)isRunning;// iOS 6+
+- (NSString *)bundleIdentifier;
 @end
 @interface SBApplicationIcon : NSObject
 - (SBApplication *)application;
@@ -47,6 +48,9 @@ static int (*BKSTerminateApplicationForReasonAndReportWithDescription)(NSString 
 - (NSArray *)_applicationIconsExceptTopApp;// iOS 5
 - (NSArray *)_bundleIdentifiersForViewDisplay;// iOS 6+
 - (void)iconCloseBoxTapped:(SBIconView *)iconView;
+@end
+@interface SpringBoard : UIApplication
+- (SBApplication *)nowPlayingApp;
 @end
 @interface UISwipeGestureRecognizer (Private)
 @property float minimumPrimaryMovement;// 50.0f
@@ -150,13 +154,13 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
             }
         } else if ([self respondsToSelector:@selector(_bundleIdentifiersForViewDisplay)]) {
             // iOS 6.x
-            NSString *nowPlayingAppID = [[[UIApplication sharedApplication] nowPlayingApp] bundleIdentifier];
+            NSString *nowPlayingAppID = [[(SpringBoard *)[UIApplication sharedApplication] nowPlayingApp] bundleIdentifier];
             SBAppSwitcherBarView *barView = MSHookIvar<SBAppSwitcherBarView *>(self, "_bottomBar");
             for (NSString *identifier in [self _bundleIdentifiersForViewDisplay]) {
                 SBIcon *icon = [barView _iconForDisplayIdentifier:identifier];
                 SBIconView *iconView = [barView _iconViewForIcon:icon creatingIfNecessary:YES];
                 if (iconView) {
-                    if (excludeNowPlayingAppPref) {
+                    if (excludeNowPlayingApp) {
                         if (![[[icon application] bundleIdentifier] isEqualToString:nowPlayingAppID])
                             [self iconCloseBoxTapped:iconView];
                     } else {
