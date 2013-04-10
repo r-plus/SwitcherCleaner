@@ -173,12 +173,14 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
                 }
             }
             // Workaround for Zephyr: When long press app that existing 2+ page location to close all app, Zephyr will not work on SpringBoard.
+            /*
             if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Zephyr.dylib"]) {
                 CGPoint firstPagePoint = [barView _firstPageOffset:[UIScreen mainScreen].applicationFrame.size];
                 firstPagePoint.x += 1;
                 UIScrollView *sv = MSHookIvar<UIScrollView *>(barView, "_scrollView");
                 [sv setContentOffset:firstPagePoint animated:NO];
             }
+            */
         }
     }
 }
