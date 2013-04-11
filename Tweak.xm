@@ -126,7 +126,8 @@ static inline void SetCloseBoxAndGesture(id self, SBIconView *iconView)
             // iOS 6.x
             SBAppSwitcherBarView *barView = MSHookIvar<SBAppSwitcherBarView *>(self, "_bottomBar");
             for (NSString *identifier in [self _bundleIdentifiersForViewDisplay]) {
-                SBIconView *iconView = [barView visibleIconViewForDisplayIdentifier:identifier];
+                SBIcon *icon = [barView _iconForDisplayIdentifier:identifier];
+                SBIconView *iconView = [barView _iconViewForIcon:icon creatingIfNecessary:YES];
                 SetCloseBoxAndGesture(self, iconView);
             }
         }
