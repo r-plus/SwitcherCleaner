@@ -1,7 +1,7 @@
 Package: jp.r-plus.switchercleaner
 Name: SwitcherCleaner
 Depends: mobilesubstrate, firmware (>= 5.0), preferenceloader
-Version: 1.2.2
+Version: 1.2.3
 Architecture: iphoneos-arm
 Conflicts: removerecents
 Description: Show only running apps with quit button for task switcher
